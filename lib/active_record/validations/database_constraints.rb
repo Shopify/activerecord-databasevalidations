@@ -1,13 +1,12 @@
 require 'active_model/validations/bytesize'
 require 'active_model/validations/not_null'
-require 'active_model/validations/basic_multilingual_plane'
 
 module ActiveRecord
   module Validations
     class DatabaseConstraintsValidator < ActiveModel::EachValidator
       attr_reader :constraints
 
-      VALID_CONSTRAINTS = Set[:size, :basic_multilingual_plane, :not_null, :range]
+      VALID_CONSTRAINTS = Set[:size, :not_null, :range]
 
       SIZE_VALIDATORS_FOR_TYPE = {
         characters: ActiveModel::Validations::LengthValidator,
@@ -55,12 +54,6 @@ module ActiveRecord
         ActiveModel::Validations::NumericalityValidator.new(args)
       end
 
-      def basic_multilingual_plane_validator(klass, column)
-        return unless constraints.include?(:basic_multilingual_plane)
-        return unless column.text? && column.collation =~ /\Autf8(?:mb3)?_/
-        ActiveModel::Validations::BasicMultilingualPlaneValidator.new(attributes: [column.name.to_sym], class: klass)
-      end
-
       def attribute_validators(klass, attribute)
         @constraint_validators[attribute] ||= begin
           column_definition = klass.columns_hash[attribute.to_s]
@@ -74,7 +67,6 @@ module ActiveRecord
           [
             not_null_validator(klass, column),
             size_validator(klass, column),
-            basic_multilingual_plane_validator(klass, column),
             range_validator(klass, column),
           ].compact
         end

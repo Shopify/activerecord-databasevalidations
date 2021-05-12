@@ -1,3 +1,7 @@
+# Unreleased
+
+* Removed the utf8mb3 validator as it is a bit anachronistic in 2021.
+
 # 0.5.1 (May 22, 2020)
 
 * Fix various Ruby 2.7 warnings

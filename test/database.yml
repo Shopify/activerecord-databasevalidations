@@ -1,6 +1,8 @@
 test:
   adapter: mysql2
   database: database_validations
-  username: travis
+  #username: travis
+  host: localhost
+  username: root
   encoding: utf8mb4
   strict: false

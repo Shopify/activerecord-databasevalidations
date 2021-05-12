@@ -30,7 +30,7 @@ to validate based on the database constraints.
 ``` ruby
 class Foo < ActiveRecord::Base
   validates :boolean_field, database_constraints: :not_null
-  validates :string_field, database_constraints: [:size, :basic_multilingual_plane]
+  validates :string_field, database_constraints: [:size]
   validates :decimal_field, :integer_field, database_constraints: :range
 end
 ```
@@ -50,8 +50,6 @@ You have to specify what conatrints you want to validate for. Valid values are:
 - `:range` to validate the numeric range of a column based on it's type.
 - `:size` to validate for the size of textual and binary columns. It will pick character
   size or bytesize based on the column's type.
-- `:basic_multilingual_plane` to validate that all characters for text fields are inside
-  the basic multilingual plane of unicode (unless you use the utf8mb4 character set).
 - `:not_null` to validate a NOT NULL contraint.
 
 The validations will only be created if it makes sense for the column, e.g. a `:not_null`
@@ -63,7 +61,7 @@ You can also instantiate the validators yourself:
 
 ``` ruby
 class Bar < ActiveRecord::Base
-  validates :string_field, bytesize: { maximum: 255 }, basic_multilingual_plane: true
+  validates :string_field, bytesize: { maximum: 255 }
   validates :string_field, not_null: true
 end
 ```

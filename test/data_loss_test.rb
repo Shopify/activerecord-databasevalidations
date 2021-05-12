@@ -3,7 +3,7 @@
 require 'test_helper'
 
 ActiveRecord::Migration.suppress_messages do
-  ActiveRecord::Migration.create_table("unicorns", force: true, options: "CHARACTER SET utf8mb3") do |t|
+  ActiveRecord::Migration.create_table("unicorns", force: true) do |t|
     t.column :string,           "VARCHAR(40)"
     t.column :tinytext,         "TINYTEXT"
     t.column :blob,             "BLOB"
@@ -96,12 +96,5 @@ class DataLossTest < Minitest::Test
   def test_blob_field_silently_drops_bytes_when_when_over_bytesize_limit
     refute_data_loss Unicorn.new(blob: [].pack('x65535')) # 65535 is bytesize limit of blob field
     assert_data_loss Unicorn.new(blob: [].pack('x65536'))
-  end
-
-  def test_utf8mb3_field_sliently_truncates_strings_after_first_4byte_character
-    emoji = "\u{1F4A9}"
-    assert_equal 1, emoji.length
-    assert_equal 4, emoji.bytesize
-    assert_data_loss Unicorn.new(string: emoji)
   end
 end

@@ -13,10 +13,6 @@ ActiveRecord::Migration.suppress_messages do
     t.integer  :unchecked,     null: false
   end
 
-  ActiveRecord::Migration.create_table("bars", force: true, options: "CHARACTER SET utf8mb4") do |t|
-    t.string   :mb4_string
-  end
-
   ActiveRecord::Migration.create_table("empties", force: true)
 
   ActiveRecord::Migration.create_table("nums", force: true) do |t|
@@ -34,11 +30,7 @@ end
 class Foo < ActiveRecord::Base
   validates :string, :tinytext, :varbinary, :blob, database_constraints: :size
   validates :checked, database_constraints: :not_null
-  validates :not_null_text, database_constraints: [:size, :basic_multilingual_plane]
-end
-
-class Bar < ActiveRecord::Base
-  validates :mb4_string, database_constraints: :basic_multilingual_plane
+  validates :not_null_text, database_constraints: [:size]
 end
 
 class Empty < ActiveRecord::Base
@@ -55,10 +47,10 @@ class DatabaseConstraintsValidatorTest < Minitest::Test
   include DataLossAssertions
 
   def test_argument_validation
-    assert_raises(ArgumentError) { Bar.validates(:mb4_string, database_constraints: []) }
-    assert_raises(ArgumentError) { Bar.validates(:mb4_string, database_constraints: true) }
-    assert_raises(ArgumentError) { Bar.validates(:mb4_string, database_constraints: :bogus) }
-    assert_raises(ArgumentError) { Bar.validates(:mb4_string, database_constraints: [:size, :bogus]) }
+    assert_raises(ArgumentError) { Foo.validates(:string, database_constraints: []) }
+    assert_raises(ArgumentError) { Foo.validates(:string, database_constraints: true) }
+    assert_raises(ArgumentError) { Foo.validates(:string, database_constraints: :bogus) }
+    assert_raises(ArgumentError) { Foo.validates(:string, database_constraints: [:size, :bogus]) }
   end
 
   def test_column_validation
@@ -104,10 +96,9 @@ class DatabaseConstraintsValidatorTest < Minitest::Test
   def test_not_null_text_field_defines_requested_bytesize_validator_and_unicode_validator
     validator = Foo._validators[:not_null_text].first
     subvalidators = validator.attribute_validators(Foo, :not_null_text)
-    assert_equal 2, subvalidators.length
+    assert_equal 1, subvalidators.length
 
     assert_kind_of ActiveModel::Validations::BytesizeValidator, subvalidators.first
-    assert_kind_of ActiveModel::Validations::BasicMultilingualPlaneValidator, subvalidators.second
     assert_equal 65535, subvalidators.first.options[:maximum]
     assert_equal Encoding.find('utf-8'), subvalidators.first.encoding
   end
@@ -116,13 +107,6 @@ class DatabaseConstraintsValidatorTest < Minitest::Test
     assert Foo.new.valid?
     assert Foo.new(checked: 1).valid?
     refute Foo.new(checked: nil).valid?
-  end
-
-  def test_should_not_create_a_validator_for_a_utf8mb4_field
-    assert Bar._validators[:mb4_string].first.attribute_validators(Bar, :mb4_string).empty?
-    emoji = Bar.new(mb4_string: '')
-    assert emoji.valid?
-    refute_data_loss emoji
   end
 
   def test_decimal_range
@@ -219,7 +203,6 @@ class DatabaseConstraintsValidatorTest < Minitest::Test
 
     assert_equal ["is too long (maximum is 40 characters)"], foo.errors[:string]
     assert_equal ["must be set"], foo.errors[:checked]
-    assert_equal ["contains characters outside Unicode's basic multilingual plane"], foo.errors[:not_null_text]
   end
 
   def test_encoding_craziness

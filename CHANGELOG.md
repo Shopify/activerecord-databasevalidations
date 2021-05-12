@@ -1,5 +1,7 @@
 # Unreleased
 
+# 1.0.0 (May 12, 2021)
+
 * Removed the utf8mb3 validator as it is a bit anachronistic in 2021.
 
 # 0.5.1 (May 22, 2020)

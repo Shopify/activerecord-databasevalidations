@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["willem@railsdoctors.com"]
   spec.summary       = %q{Add validations to your ActiveRecord models based on MySQL database constraints.}
   spec.description   = %q{Opt-in validations for your ActiveRecord models based on your MySQL database constraints, including text field size, UTF-8 encoding issues, and NOT NULL constraints.}
-  spec.homepage      = "https://github.com/wvanbergen/activerecord-database_validations"
+  spec.homepage      = "https://github.com/Shopify/activerecord-databasevalidations"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")

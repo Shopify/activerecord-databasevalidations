@@ -1,5 +1,9 @@
 # Unreleased
 
+# 1.0.1 (May 9, 2023)
+
+* Updated gemspec to point to the proper home page.
+
 # 1.0.0 (May 12, 2021)
 
 * Removed the utf8mb3 validator as it is a bit anachronistic in 2021.

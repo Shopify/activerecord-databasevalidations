@@ -6,15 +6,15 @@ module ActiveRecord
         varchar:    { type: :characters },
         varbinary:  { type: :bytes },
 
-        tinytext:   { type: :bytes, maximum: 2 **  8 - 1 },
-        text:       { type: :bytes, maximum: 2 ** 16 - 1 },
-        mediumtext: { type: :bytes, maximum: 2 ** 24 - 1 },
-        longtext:   { type: :bytes, maximum: 2 ** 32 - 1 },
+        tinytext:   { type: :bytes },
+        text:       { type: :bytes },
+        mediumtext: { type: :bytes },
+        longtext:   { type: :bytes },
 
-        tinyblob:   { type: :bytes, maximum: 2 **  8 - 1 },
-        blob:       { type: :bytes, maximum: 2 ** 16 - 1 },
-        mediumblob: { type: :bytes, maximum: 2 ** 24 - 1 },
-        longblob:   { type: :bytes, maximum: 2 ** 32 - 1 },
+        tinyblob:   { type: :bytes },
+        blob:       { type: :bytes },
+        mediumblob: { type: :bytes },
+        longblob:   { type: :bytes },
       }
 
       def self.column_size_limit(column)
@@ -22,7 +22,7 @@ module ActiveRecord
         type_limit  = TYPE_LIMITS.fetch(column_type, {})
 
         [
-          column.limit || type_limit[:maximum],
+          column.limit,
           type_limit[:type],
           determine_encoding(column),
         ]

@@ -1,0 +1,14 @@
+# This file is for Shopify employees development environment.
+# If you are an external contributor you don't have to bother with it.
+name: activerecord-databasevalidations
+
+up:
+  - packages:
+      - mysql_client
+  - ruby
+  - bundler
+  - mysql
+  - custom:
+      name: Create database
+      meet: mysql -uroot -h $MYSQL_HOST -P $MYSQL_PORT -e "CREATE DATABASE database_validations"
+      met?: mysql -uroot -h $MYSQL_HOST -P $MYSQL_PORT database_validations -e "SELECT 1" &> /dev/null

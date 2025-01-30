@@ -37,7 +37,7 @@ module ActiveRecord
         return unless constraints.include?(:size)
         return unless column.text? || column.binary?
 
-        maximum, type, encoding = ActiveRecord::DatabaseValidations::MySQL.column_size_limit(column)
+        maximum, type, encoding = adapter_for(column).column_size_limit(column)
         validator_class = SIZE_VALIDATORS_FOR_TYPE[type]
 
         if validator_class && maximum
@@ -50,7 +50,7 @@ module ActiveRecord
         return unless column.number?
 
         args = { attributes: [column.name.to_sym], class: klass, allow_nil: true }
-        args.merge!(ActiveRecord::DatabaseValidations::MySQL.column_range(column))
+        args.merge!(adapter_for(column).column_range(column))
         ActiveModel::Validations::NumericalityValidator.new(args)
       end
 
@@ -76,6 +76,10 @@ module ActiveRecord
         attribute_validators(record.class, attribute).each do |validator|
           validator.validate(record)
         end
+      end
+
+      def adapter_for(column)
+        DatabaseValidations::Adapters.for(column.__getobj__)
       end
     end
   end

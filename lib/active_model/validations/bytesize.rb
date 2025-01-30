@@ -15,7 +15,8 @@ module ActiveModel
       end
 
       def validate_each(record, attribute, value)
-        string = ActiveRecord::DatabaseValidations::MySQL.value_for_column(value, options[:encoding])
+        string = value.to_s
+        string = value.encode(Encoding::UTF_8) if value.present? && value.encoding != options[:encoding]
 
         if string.bytesize > options[:maximum]
           errors_options = options.except(:too_many_bytes, :maximum)

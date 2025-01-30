@@ -7,8 +7,9 @@ module ActiveRecord
         return if value.nil?
 
         column = self.class.columns_hash[field.to_s]
-        maximum, type, encoding = ActiveRecord::DatabaseValidations::MySQL.column_size_limit(column)
-        value = ActiveRecord::DatabaseValidations::MySQL.value_for_column(value, encoding)
+        adapter = DatabaseValidations::Adapters.for(column)
+        maximum, type, encoding = adapter.column_size_limit(column)
+        value = adapter.value_for_column(value, encoding)
 
         case type
         when :characters

@@ -18,7 +18,7 @@ module DataLossAssertions
 
     persisted_values = record.reload.attributes.slice(*attributes)
     refute_equal provided_values, persisted_values
-  rescue RangeError
+  rescue ActiveRecord::RangeError, ActiveRecord::StatementInvalid, ActiveModel::RangeError
     pass
   end
 
@@ -33,8 +33,17 @@ module DataLossAssertions
   end
 end
 
-Minitest::Test = MiniTest::Unit::TestCase unless defined?(MiniTest::Test)
+mysql_host = ENV.fetch("MYSQL_HOST") { "localhost" }
+mysql_port = ENV.fetch("MYSQL_PORT") { 3306 }
+connection_config = {
+  adapter: "mysql2",
+  database: "database_validations",
+  username: "root",
+  encoding: "utf8mb4",
+  strict: false,
+  host: mysql_host,
+  port: mysql_port,
+}
 
-database_yml = YAML.load_file(File.expand_path('../database.yml', __FILE__))
-ActiveRecord::Base.establish_connection(database_yml['test'])
+ActiveRecord::Base.establish_connection(connection_config)
 I18n.enforce_available_locales = false

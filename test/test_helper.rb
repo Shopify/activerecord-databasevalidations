@@ -35,7 +35,7 @@ end
 
 mysql_host = ENV.fetch("MYSQL_HOST") { "localhost" }
 mysql_port = ENV.fetch("MYSQL_PORT") { 3306 }
-connection_config = {
+mysql_connection_config = {
   adapter: "mysql2",
   database: "database_validations",
   username: "root",
@@ -45,5 +45,5 @@ connection_config = {
   port: mysql_port,
 }
 
-ActiveRecord::Base.establish_connection(connection_config)
+ActiveRecord::Base.establish_connection(mysql_connection_config)
 I18n.enforce_available_locales = false

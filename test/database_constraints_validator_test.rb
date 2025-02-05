@@ -43,6 +43,23 @@ class Num < ActiveRecord::Base
   validates :decimal, :unsigned_decimal, :tinyint, :smallint, :mediumint, :int, :bigint, :unsigned_int, database_constraints: :range
 end
 
+class SQLiteModel < ActiveRecord::Base
+  self.abstract_class = true
+  establish_connection(adapter: "sqlite3", database: ":memory:")
+  connection.create_table("not_my_sql_models", force: true) do |t|
+    t.text "text_column"
+    t.bigint "bigint_column"
+    t.string "not_null_column", null: false
+    t.string "null_column"
+  end
+end
+
+class NotMySQLModel < SQLiteModel
+  validates :text_column, database_constraints: :size
+  validates :bigint_column, database_constraints: :range
+  validates :not_null_column, database_constraints: :not_null
+end
+
 class DatabaseConstraintsValidatorTest < Minitest::Test
   include DataLossAssertions
 
@@ -101,6 +118,14 @@ class DatabaseConstraintsValidatorTest < Minitest::Test
     assert_kind_of ActiveModel::Validations::BytesizeValidator, subvalidators.first
     assert_equal 65535, subvalidators.first.options[:maximum]
     assert_equal Encoding.find('utf-8'), subvalidators.first.encoding
+  end
+
+  def test_skips_size_and_range_validators_for_non_mysql_adapter
+    record = NotMySQLModel.new(not_null_column: "something")
+    assert(record.valid?)
+
+    record.not_null_column = nil
+    refute(record.valid?)
   end
 
   def test_not_null_columns_with_a_default_value

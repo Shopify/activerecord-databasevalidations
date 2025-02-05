@@ -1,5 +1,9 @@
 # Unreleased
 
+# 1.0.2 (Feb 5, 2025)
+
+* Disable size + range validations for non-MySQL adapters.
+
 # 1.0.1 (May 9, 2023)
 
 * Updated gemspec to point to the proper home page.

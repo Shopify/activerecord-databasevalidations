@@ -1,9 +1,12 @@
 require 'active_model/validations/bytesize'
 require 'active_model/validations/not_null'
+require 'active_record/validations/adapter_helper'
 
 module ActiveRecord
   module Validations
     class DatabaseConstraintsValidator < ActiveModel::EachValidator
+      include Validations::AdapterHelper
+
       attr_reader :constraints
 
       VALID_CONSTRAINTS = Set[:size, :not_null, :range]
@@ -35,7 +38,7 @@ module ActiveRecord
 
       def size_validator(klass, column)
         return unless constraints.include?(:size)
-        return unless mysql_adapter?(klass)
+        return unless mysql_adapter?(klass.connection)
         return unless column.text? || column.binary?
 
         maximum, type, encoding = ActiveRecord::DatabaseValidations::MySQL.column_size_limit(column)
@@ -48,7 +51,7 @@ module ActiveRecord
 
       def range_validator(klass, column)
         return unless constraints.include?(:range)
-        return unless mysql_adapter?(klass)
+        return unless mysql_adapter?(klass.connection)
         return unless column.number?
 
         args = { attributes: [column.name.to_sym], class: klass, allow_nil: true }
@@ -78,12 +81,6 @@ module ActiveRecord
         attribute_validators(record.class, attribute).each do |validator|
           validator.validate(record)
         end
-      end
-
-      private
-
-      def mysql_adapter?(klass)
-        klass.connection.class < ::ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter
       end
     end
   end

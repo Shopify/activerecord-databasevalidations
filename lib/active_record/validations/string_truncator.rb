@@ -4,6 +4,7 @@ module ActiveRecord
       extend ActiveSupport::Concern
 
       def truncate_value_to_field_limit(field, value)
+        return value unless mysql_adapter?
         return if value.nil?
 
         column = self.class.columns_hash[field.to_s]
@@ -18,6 +19,12 @@ module ActiveRecord
         end
 
         value
+      end
+
+      private
+
+      def mysql_adapter?
+        self.class.connection.class < ::ActiveRecord::ConnectionAdapters::AbstractMysqlAdapter
       end
 
       module ClassMethods

@@ -23,6 +23,19 @@ class MagicalCreature < ActiveRecord::Base
   truncate_to_field_limit :another_string
 end
 
+class MagicalSqliteCreature < ActiveRecord::Base
+  establish_connection(adapter: "sqlite3", database: ":memory:")
+  connection.create_table("magical_sqlite_creatures", force: true) do |t|
+    t.string :string, limit: 255
+    t.string :another_string, limit: 255
+  end
+
+  include ActiveRecord::DatabaseValidations::StringTruncator
+
+  before_validation truncate_string(:string)
+  truncate_to_field_limit :another_string
+end
+
 class StringTruncatorTest < Minitest::Test
   def test_handles_nil_gracefully
     u_nil = MagicalCreature.create!(string: 'present', tinytext: 'present')
@@ -71,5 +84,15 @@ class StringTruncatorTest < Minitest::Test
   def test_truncate_to_field_limit
     u6 = MagicalCreature.new(another_string: 'a' * 256)
     assert_equal 'a' * 255, u6.another_string
+  end
+
+  def test_skips_truncate_for_non_mysql_adapter
+    record = MagicalSqliteCreature.new(string: 'a' * 256)
+    assert(record.valid?)
+    assert_equal 'a' * 256, record.string
+
+    record.another_string = 'a' * 256
+    assert(record.valid?)
+    assert_equal 'a' * 256, record.another_string
   end
 end

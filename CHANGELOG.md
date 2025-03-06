@@ -1,5 +1,9 @@
 # Unreleased
 
+# 1.0.3 (Mar 6, 2025)
+
+* Disable string truncation helpers for non-MySQL adapters.
+
 # 1.0.2 (Feb 5, 2025)
 
 * Disable size + range validations for non-MySQL adapters.

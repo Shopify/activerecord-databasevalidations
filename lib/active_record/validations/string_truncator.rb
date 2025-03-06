@@ -1,9 +1,13 @@
+require 'active_record/validations/adapter_helper'
+
 module ActiveRecord
   module DatabaseValidations
     module StringTruncator
       extend ActiveSupport::Concern
+      include Validations::AdapterHelper
 
       def truncate_value_to_field_limit(field, value)
+        return value unless mysql_adapter?(self.class.connection)
         return if value.nil?
 
         column = self.class.columns_hash[field.to_s]

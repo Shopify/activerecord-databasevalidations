@@ -60,6 +60,32 @@ class NotMySQLModel < SQLiteModel
   validates :not_null_column, database_constraints: :not_null
 end
 
+class PostgreSQLModel < ActiveRecord::Base
+  self.abstract_class = true
+  establish_connection(
+    adapter: "postgresql", 
+    database: "activerecord_databasevalidations_test",
+    username: "postgres",
+    host: "localhost"
+  )
+  
+  connection.create_table("postgresql_models", force: true) do |t|
+    t.string "varchar_column", limit: 50
+    t.text "text_column"
+    t.string "not_null_column", null: false
+    t.string "null_column"
+  end
+rescue ActiveRecord::NoDatabaseError, PG::ConnectionBad
+  # Skip PostgreSQL tests if database not available
+  nil
+end
+
+class PostgreSQLTestModel < PostgreSQLModel
+  validates :varchar_column, database_constraints: :size
+  validates :text_column, database_constraints: :size
+  validates :not_null_column, database_constraints: :not_null
+end if defined?(PostgreSQLModel)
+
 class DatabaseConstraintsValidatorTest < Minitest::Test
   include DataLossAssertions
 
@@ -234,5 +260,32 @@ class DatabaseConstraintsValidatorTest < Minitest::Test
     foo = Foo.new(tinytext: ('ü' * 128).encode('ISO-8859-15'), string: ('ü' * 40).encode('ISO-8859-15'))
     assert foo.invalid?
     assert_data_loss foo
+  end
+
+  def test_postgresql_size_constraints
+    skip "PostgreSQL not available" unless defined?(PostgreSQLTestModel)
+    
+    # Test varchar column with limit
+    record = PostgreSQLTestModel.new(varchar_column: "a" * 50, not_null_column: "something")
+    assert record.valid?
+    
+    record.varchar_column = "a" * 51  # Exceeds limit
+    refute record.valid?
+    assert_includes record.errors[:varchar_column], "is too long (maximum is 50 characters)"
+    
+    # Test text column (PostgreSQL text columns don't have built-in limits)
+    record = PostgreSQLTestModel.new(text_column: "a" * 1000, not_null_column: "something")
+    assert record.valid?  # Should pass since PostgreSQL text has no limit
+  end
+
+  def test_postgresql_not_null_constraints
+    skip "PostgreSQL not available" unless defined?(PostgreSQLTestModel)
+    
+    record = PostgreSQLTestModel.new(not_null_column: "something")
+    assert record.valid?
+    
+    record.not_null_column = nil
+    refute record.valid?
+    assert_includes record.errors[:not_null_column], "must be set"
   end
 end

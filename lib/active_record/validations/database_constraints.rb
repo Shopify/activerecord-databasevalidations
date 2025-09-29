@@ -1,6 +1,7 @@
 require 'active_model/validations/bytesize'
 require 'active_model/validations/not_null'
 require 'active_record/validations/adapter_helper'
+require 'active_record/database_validations/postgresql'
 
 module ActiveRecord
   module Validations
@@ -38,10 +39,18 @@ module ActiveRecord
 
       def size_validator(klass, column)
         return unless constraints.include?(:size)
-        return unless mysql_adapter?(klass.connection)
         return unless column.text? || column.binary?
+        
+        connection = klass.connection
+        
+        if mysql_adapter?(connection)
+          maximum, type, encoding = ActiveRecord::DatabaseValidations::MySQL.column_size_limit(column)
+        elsif postgresql_adapter?(connection)
+          maximum, type, encoding = ActiveRecord::DatabaseValidations::PostgreSQL.column_size_limit(column)
+        else
+          return
+        end
 
-        maximum, type, encoding = ActiveRecord::DatabaseValidations::MySQL.column_size_limit(column)
         validator_class = SIZE_VALIDATORS_FOR_TYPE[type]
 
         if validator_class && maximum

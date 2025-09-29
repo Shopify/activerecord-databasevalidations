@@ -1,5 +1,7 @@
 # Unreleased
 
+* Add PostgreSQL support for database constraints validation. Size constraints now work with PostgreSQL `character varying(n)`, `varchar(n)`, `char(n)`, and `text` columns.
+
 # 1.0.3 (Mar 6, 2025)
 
 * Disable string truncation helpers for non-MySQL adapters.
